@@ -1,6 +1,5 @@
 # Smart Face Recognition Attendance System (Real-Time using YuNet + FaceNet)
 
----
 
 ## Overview
 
@@ -326,3 +325,4 @@ attendance_records/attendance_2025-11-10.csv
 
 This project is open-source and licensed under the **MIT License**.
 You are free to modify and use it for research, educational, or development purposes.
+
