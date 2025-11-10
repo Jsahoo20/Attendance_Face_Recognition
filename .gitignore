@@ -1,0 +1,22 @@
+# Ignore Python cache
+__pycache__/
+*.pyc
+
+# Ignore virtual environment
+.venv/
+
+# Ignore models and data files (if any)
+Models/
+*.h5
+*.pb
+*.data-*
+*.index
+
+# Ignore attendance logs and image data
+attendance/
+attendance_records/
+Images/
+
+# System files
+.DS_Store
+Thumbs.db

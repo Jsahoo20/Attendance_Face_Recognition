@@ -1,0 +1,8 @@
+{
+    "model_path": "Models/facenet_keras.h5",
+    "images_folder": "Images",
+    "attendance_folder": "attendance",
+    "encoding_file": "DeepFaceEncodings.pkl",
+    "distance_threshold": 0.9,
+    "camera_index": 0
+}
