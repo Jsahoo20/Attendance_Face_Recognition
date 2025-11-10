@@ -15,7 +15,7 @@ It uses:
 
 The system works entirely offline, ensuring privacy and reliability.
 
----
+
 
 ## Technical Flow
 
@@ -34,7 +34,7 @@ The system works entirely offline, ensuring privacy and reliability.
 4️⃣ **Attendance Logging (Pandas)**
 → Writes entry in `attendance_records/attendance_<date>.csv`
 
----
+
 
 ## Key Features
 
@@ -65,7 +65,7 @@ FaceRecognitionAttendance/
 └── README.md                        # Project documentation (this file)
 ```
 
----
+
 
 ## Installation & Setup
 
@@ -76,7 +76,7 @@ git clone https://github.com/<your-username>/FaceRecognitionAttendance.git
 cd FaceRecognitionAttendance
 ```
 
----
+
 
 ### Create a Virtual Environment
 
@@ -98,7 +98,7 @@ Activate the environment:
 source .venv/bin/activate
 ```
 
----
+
 
 ### Install Dependencies
 
@@ -118,7 +118,7 @@ protobuf<7,>=3.20
 cvzone==1.6.1
 ```
 
----
+
 
 ### Download YuNet Model
 
@@ -138,7 +138,7 @@ FaceRecognitionAttendance/
 └── ...
 ```
 
----
+
 
 ### Setup Configuration
 
@@ -152,7 +152,7 @@ Edit `config.json` file to match your folder names:
 }
 ```
 
----
+
 
 ## System Components
 
@@ -166,7 +166,7 @@ Edit `config.json` file to match your folder names:
   * `get_faces_and_embeddings(frame)` → Detects multiple faces & gets embeddings
   * `get_embedding_from_crop(face_crop)` → Returns embedding for cropped face
 
----
+
 
 ### `registration.py`
 
@@ -178,7 +178,7 @@ Edit `config.json` file to match your folder names:
   * `/Images/` (face images)
   * `DeepFaceEncodings.pkl` (embeddings + IDs + names)
 
----
+
 
 ### `main.py`
 
@@ -188,7 +188,7 @@ Edit `config.json` file to match your folder names:
 * Matches embeddings with known database using Euclidean distance
 * Marks attendance once per person per day
 
----
+
 
 
 ## Step-by-Step Usage
@@ -214,13 +214,13 @@ python registration.py
 * A cropped face image saved in `/Images`
 * A 128D embedding stored in `DeepFaceEncodings.pkl`
 
----
+
 
 ### Step 2: Run Real-Time Attendance (Using Sparsh 5G IP Camera)
 
 This system supports any IP camera that provides an **RTSP stream** — here we are using **Sparsh 5G CCTV cameras**.
 
----
+
 
 #### What is RTSP?
 
@@ -254,7 +254,7 @@ You can verify the RTSP URL by opening it in **VLC Media Player** →
 
 If the feed opens in VLC, it will also work with OpenCV.
 
----
+
 
 #### Configure in `main.py`
 
@@ -279,7 +279,7 @@ python main.py
 * Mark attendance automatically once per day
 * Save attendance logs in `/attendance_records/`
 
----
+
 
 ### Output Files
 
@@ -294,7 +294,7 @@ attendance_records/attendance_2025-11-10.csv
 | u22ec145 | Abhisar Kumar        | 2025-11-10 16:45:12 |
 | u22ec166 | Jyotishankar Sahoo   | 2025-11-10 16:47:33 |
 
----
+
 
 ## Troubleshooting
 
@@ -312,17 +312,16 @@ attendance_records/attendance_2025-11-10.csv
 * Check if `attendance_records` folder exists (auto-created on first run).
 * Ensure `DeepFaceEncodings.pkl` contains valid embeddings.
 
----
 
 ## Future Enhancements
 🔹 Streamlit-based web dashboard
 🔹 Auto-tracking of multiple persons via DeepSORT
 🔹 Cloud-sync of attendance logs
 
----
 
 ## 📜 License
 
 This project is open-source and licensed under the **MIT License**.
 You are free to modify and use it for research, educational, or development purposes.
+
 
