@@ -3,13 +3,13 @@
 
 ## Overview
 
-This project is a **real-time Face Recognition Attendance System** that automatically detects and recognizes faces from **live video feeds** — using either a **webcam** or a **5G Lab IP camera (RTSP)**.
+This project is a **real-time Face Recognition Attendance System** that automatically detects and recognizes faces from **live video feeds** — using either a **webcam** or a **5G Lab IP camera (RTSP)**. The system also features a user-friendly **GUI Dashboard** for easy management, allowing operators to register students, mark attendance, de-register student and manage the database without touching the code.
 
 It uses:
 
 * **YuNet** (OpenCV Zoo ONNX Model) for **fast and accurate face detection**
 * **FaceNet** (via `keras-facenet`) for **face embedding generation**
-* **TensorFlow** for deep feature extraction
+* **Tkinter** for the **Control Dashboard (GUI)**
 * **OpenCV** for camera integration and visualization
 * **Pandas** for attendance management via CSV logging
 
@@ -17,7 +17,7 @@ The system works entirely offline, ensuring privacy and reliability.
 
 
 
-## Technical Flow
+## Technical Architecture
 
 1️⃣ **Face Detection (YuNet)**
 → Input: BGR frame
@@ -32,7 +32,7 @@ The system works entirely offline, ensuring privacy and reliability.
 → Match if `distance < 0.8`
 
 4️⃣ **Attendance Logging (Pandas)**
-→ Writes entry in `attendance_records/attendance_<date>.csv`
+→ Logic: If match found + not already marked today → Write to CSV
 
 
 
@@ -55,6 +55,7 @@ FaceRecognitionAttendance/
 ├── Images/                          # Stores registered student face images
 ├── attendance_records/              # Stores daily attendance CSV files
 │
+├── dashboard_gui.py                 # dashboard gui
 ├── face_model.py                    # Face detection & embedding module (YuNet + FaceNet)
 ├── registration.py                  # Register new students using webcam
 ├── main.py                          # Real-time attendance recognition (IP camera)
@@ -193,12 +194,12 @@ Edit `config.json` file to match your folder names:
 
 ## Step-by-Step Usage
 
-### Step 1: Register New Students
+### Step 1: Register New Students (Using dashboard)
 
 Run:
 
 ```bash
-python registration.py
+python dashboard.py
 ```
 
 **Instructions:**
@@ -214,13 +215,11 @@ python registration.py
 * A cropped face image saved in `/Images`
 * A 128D embedding stored in `DeepFaceEncodings.pkl`
 
+### Step 2: Start Real-Time Attendance
 
-
-### Step 2: Run Real-Time Attendance (Using Sparsh 5G IP Camera)
-
-This system supports any IP camera that provides an **RTSP stream** — here we are using **Sparsh 5G CCTV cameras**.
-
-
+* Select "START 5G ATTENDANCE" in Dashboard
+* Detects & recognizes students from live camera feed
+* Auto-logs attendance in CSV
 
 #### What is RTSP?
 
@@ -323,6 +322,7 @@ attendance_records/attendance_2025-11-10.csv
 
 This project is open-source and licensed under the **MIT License**.
 You are free to modify and use it for research, educational, or development purposes.
+
 
 
 
