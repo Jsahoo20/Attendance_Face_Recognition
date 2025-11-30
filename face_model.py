@@ -1,100 +1,96 @@
-# face_model.py
+import os
 import cv2
 import numpy as np
 from keras_facenet import FaceNet
 
-# --- 1. Load the Embedder (FaceNet) ---
-# This is what creates the 128D vector
-print("Loading FaceNet embedder...")
+# --- ENVIRONMENT SETUP ---
+os.environ["TF_USE_LEGACY_KERAS"] = "1"
+os.environ["TF_ENABLE_ONEDNN_OPTS"] = "0"
+
+# --- LOAD MODELS ---
+# 1. Load FaceNet (For Recognition)
 embedder = FaceNet()
-print("FaceNet embedder loaded.")
+print("FaceNet model loaded.")
 
-# --- 2. Load the Detector (YuNet) ---
-# This is what finds the face in the image
-print("Loading YuNet face detector...")
-# Download the model file here if you don't have it:
-# https://github.com/opencv/opencv_zoo/raw/main/models/face_detection_yunet/face_detection_yunet_2023mar.onnx
-model_path = "face_detection_yunet_2023mar.onnx"
-detector = cv2.FaceDetectorYN.create(model_path, "", (0, 0))
-print("YuNet detector loaded.")
+# 2. Load YuNet (For Detection - FAST)
+yunet_path = "face_detection_yunet_2023mar.onnx"
+if not os.path.exists(yunet_path):
+    print(f"ERROR: '{yunet_path}' not found. Please download it.")
+    exit()
 
-def get_embedding_from_crop(face_crop):
-    """
-    Takes a pre-cropped face (160x160) and returns the embedding.
-    """
-    face_pixels = np.expand_dims(face_crop, axis=0)
-    embedding = embedder.embeddings(face_pixels)
-    return embedding[0]
+# Initialize YuNet
+face_detector = cv2.FaceDetectorYN.create(
+    model=yunet_path,
+    config="",
+    input_size=(320, 320),
+    score_threshold=0.8, 
+    nms_threshold=0.3,
+    top_k=5000,
+    backend_id=cv2.dnn.DNN_BACKEND_OPENCV,
+    target_id=cv2.dnn.DNN_TARGET_CPU
+)
+print("YuNet detection model loaded.")
 
 def detect_single_face(frame):
     """
-    Detects just one face using fast YuNet.
-    Returns a single box [x, y, w, h] or None.
+    Used by registration.py to find the largest face.
     """
-    # YuNet needs a specific input size
     h, w, _ = frame.shape
-    detector.setInputSize((w, h))
-
-    # faces[1] contains the list of detected faces
-    faces = detector.detect(frame)
-    if faces[1] is None:
-        return None
-
-    # Find the face with the highest confidence
-    best_face = max(faces[1], key=lambda x: x[14]) # index 14 is confidence
-    confidence = best_face[14]
+    face_detector.setInputSize((w, h))
+    _, faces = face_detector.detect(frame)
     
-    # --- MODIFIED --- Lower threshold for bad light
-    if confidence < 0.8:
+    if faces is None:
         return None
+        
+    # Find the largest face
+    best_face = None
+    max_area = 0
+    for face in faces:
+        box = face[0:4].astype(int)
+        x, y, w_box, h_box = box
+        area = w_box * h_box
+        if area > max_area:
+            max_area = area
+            best_face = (x, y, w_box, h_box)
+    return best_face
 
-    # Convert box from [x, y, w, h]
-    box = best_face[:4].astype(int)
-    return box
+def get_embedding_from_crop(face_crop):
+    """
+    Used by registration.py to get embedding from a cropped face.
+    """
+    face_crop = cv2.resize(face_crop, (160, 160))
+    face_pixels = np.expand_dims(face_crop, axis=0)
+    embedding = embedder.embeddings(face_pixels)[0]
+    return embedding
 
 def get_faces_and_embeddings(frame):
     """
-    Takes a whole BGR frame, finds faces (YuNet),
-    and returns a list of boxes and embeddings (FaceNet).
+    Used by main.py to detect multiple faces.
     """
     detections = []
-    
-    # YuNet needs a specific input size
     h, w, _ = frame.shape
-    detector.setInputSize((w, h))
+    face_detector.setInputSize((w, h))
+    _, faces = face_detector.detect(frame)
+    
+    if faces is None:
+        return []
 
-    faces = detector.detect(frame)
-    if faces[1] is None:
-        return detections # Return empty list
-
-    # Loop over all detected faces
-    for face_data in faces[1]:
-        confidence = face_data[14]
+    for face in faces:
+        box = face[0:4].astype(int)
+        x, y, w_box, h_box = box
+        x, y = max(0, x), max(0, y)
         
-        # --- MODIFIED --- Lower threshold
-        if confidence < 0.85:
+        face_crop = frame[y:y+h_box, x:x+w_box]
+        if face_crop.size == 0: continue
+            
+        try:
+            embedding = get_embedding_from_crop(face_crop)
+            detections.append({
+                'box': [x, y, w_box, h_box],
+                'embedding': embedding,
+                'score': face[-1]
+            })
+        except:
             continue
             
-        box = face_data[:4].astype(int)
-        (x, y, w, h) = box
-        
-        # Crop the face
-        if y < 0: y = 0 # Fix negative cropping
-        if x < 0: x = 0
-        face_crop = frame[y:y+h, x:x+w]
-        
-        if face_crop.size == 0:
-            continue
-            
-        # Resize for FaceNet
-        face_crop_resized = cv2.resize(face_crop, (160, 160))
-        
-        # Get embedding
-        embedding = get_embedding_from_crop(face_crop_resized)
-        
-        detections.append({
-            'box': box,
-            'embedding': embedding
-        })
-        
     return detections
